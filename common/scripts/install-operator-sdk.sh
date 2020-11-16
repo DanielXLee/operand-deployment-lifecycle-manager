@@ -27,8 +27,8 @@ else
     echo "This system's OS $local_os isn't recognized/supported"
 fi
 
-# Use version 0.19.2
-RELEASE_VERSION=v0.19.2
+# Use version 1.2.0
+RELEASE_VERSION=v1.2.0
 # Download binary
 curl -LO https://github.com/operator-framework/operator-sdk/releases/download/${RELEASE_VERSION}/operator-sdk-${RELEASE_VERSION}-${arch}-${target_os}
 # Install binary

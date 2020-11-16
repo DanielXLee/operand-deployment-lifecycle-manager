@@ -61,10 +61,13 @@ func main() {
 	defer klog.Flush()
 	var metricsAddr string
 	var enableLeaderElection bool
+	var crtlName string
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
+	flag.StringVar(&crtlName, "ctrl-name", "", "Which controller reconcile.")
+
 	flag.Parse()
 
 	gvkLabelMap := map[schema.GroupVersionKind]cache.Selector{
@@ -97,39 +100,44 @@ func main() {
 		klog.Errorf("unable to start manager: %v", err)
 		os.Exit(1)
 	}
-
-	if err = (&controllers.OperandRequestReconciler{
-		Client:   mgr.GetClient(),
-		Config:   mgr.GetConfig(),
-		Recorder: mgr.GetEventRecorderFor("OperandRequest"),
-		Scheme:   mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		klog.Errorf("unable to create controller OperandRequest: %v", err)
-		os.Exit(1)
-	}
-	if err = (&controllers.OperandConfigReconciler{
-		Client:   mgr.GetClient(),
-		Recorder: mgr.GetEventRecorderFor("OperandConfig"),
-		Scheme:   mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		klog.Errorf("unable to create controller OperandConfig: %v", err)
-		os.Exit(1)
-	}
-	if err = (&controllers.OperandBindInfoReconciler{
-		Client:   mgr.GetClient(),
-		Recorder: mgr.GetEventRecorderFor("OperandBindInfo"),
-		Scheme:   mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		klog.Errorf("unable to create controller OperandBindInfo: %v", err)
-		os.Exit(1)
-	}
-	if err = (&controllers.OperandRegistryReconciler{
-		Client:   mgr.GetClient(),
-		Recorder: mgr.GetEventRecorderFor("OperandRegistry"),
-		Scheme:   mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		klog.Errorf("unable to create controller OperandRegistry: %v", err)
-		os.Exit(1)
+	switch crtlName {
+	case "OperandRegistry":
+		if err = (&controllers.OperandRegistryReconciler{
+			Client:   mgr.GetClient(),
+			Recorder: mgr.GetEventRecorderFor("OperandRegistry"),
+			Scheme:   mgr.GetScheme(),
+		}).SetupWithManager(mgr); err != nil {
+			klog.Errorf("unable to create controller OperandRegistry: %v", err)
+			os.Exit(1)
+		}
+	case "OperandConfig":
+		if err = (&controllers.OperandConfigReconciler{
+			Client:   mgr.GetClient(),
+			Recorder: mgr.GetEventRecorderFor("OperandConfig"),
+			Scheme:   mgr.GetScheme(),
+		}).SetupWithManager(mgr); err != nil {
+			klog.Errorf("unable to create controller OperandConfig: %v", err)
+			os.Exit(1)
+		}
+	case "OperandRequest":
+		if err = (&controllers.OperandRequestReconciler{
+			Client:   mgr.GetClient(),
+			Config:   mgr.GetConfig(),
+			Recorder: mgr.GetEventRecorderFor("OperandRequest"),
+			Scheme:   mgr.GetScheme(),
+		}).SetupWithManager(mgr); err != nil {
+			klog.Errorf("unable to create controller OperandRequest: %v", err)
+			os.Exit(1)
+		}
+	case "OperandBindInfo":
+		if err = (&controllers.OperandBindInfoReconciler{
+			Client:   mgr.GetClient(),
+			Recorder: mgr.GetEventRecorderFor("OperandBindInfo"),
+			Scheme:   mgr.GetScheme(),
+		}).SetupWithManager(mgr); err != nil {
+			klog.Errorf("unable to create controller OperandBindInfo: %v", err)
+			os.Exit(1)
+		}
 	}
 	// +kubebuilder:scaffold:builder
 

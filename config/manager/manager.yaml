@@ -47,6 +47,8 @@ spec:
         - /manager
         args:
         - -v=2
+        - --ctrl-name=OperandRequest
+        - --metrics-addr=:8080
         env:
         - name: OPERATOR_NAMESPACE
           valueFrom:
@@ -59,7 +61,109 @@ spec:
               name: namespace-scope
               key: namespaces
         image: quay.io/opencloudio/odlm:latest
-        name: manager
+        name: request
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 200m
+            memory: 200Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          privileged: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+      - command:
+        - /manager
+        args:
+        - -v=2
+        - --ctrl-name=OperandRegistry
+        - --metrics-addr=:8081
+        env:
+        - name: OPERATOR_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: WATCH_NAMESPACE
+          valueFrom:
+            configMapKeyRef:
+              name: namespace-scope
+              key: namespaces
+        image: quay.io/opencloudio/odlm:latest
+        name: registry
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 200m
+            memory: 200Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          privileged: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+      - command:
+        - /manager
+        args:
+        - -v=2
+        - --ctrl-name=OperandConfig
+        - --metrics-addr=:8082
+        env:
+        - name: OPERATOR_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: WATCH_NAMESPACE
+          valueFrom:
+            configMapKeyRef:
+              name: namespace-scope
+              key: namespaces
+        image: quay.io/opencloudio/odlm:latest
+        name: config
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 200m
+            memory: 200Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          privileged: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+      - command:
+        - /manager
+        args:
+        - -v=2
+        - --ctrl-name=OperandBindInfo
+        - --metrics-addr=:8083
+        env:
+        - name: OPERATOR_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: WATCH_NAMESPACE
+          valueFrom:
+            configMapKeyRef:
+              name: namespace-scope
+              key: namespaces
+        image: quay.io/opencloudio/odlm:latest
+        name: bindinfo
         resources:
           limits:
             cpu: 500m
